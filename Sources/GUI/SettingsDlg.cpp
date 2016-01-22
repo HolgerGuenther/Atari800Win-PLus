@@ -34,8 +34,8 @@ BEGIN_MESSAGE_MAP(CSettingsDlg, CCommonDlg)
 	ON_BN_CLICKED(IDC_SETTINGS_ENABLEP, OnEnableP)
 	ON_BN_CLICKED(IDC_SETTINGS_ENABLER, OnEnableR)
 	ON_BN_CLICKED(IDC_SETTINGS_HARDREADONLY, OnHardReadOnly)
-	ON_BN_CLICKED(IDC_SETTINGS_PRINTCHECK, OnPrintCheck)
-	ON_EN_KILLFOCUS(IDC_SETTINGS_PRINTCMD, OnKillfocusPrintCmd)
+	ON_CBN_SELCHANGE(IDC_SETTINGS_PRINTMETHOD, OnSelchangePrintMethod)
+	ON_EN_KILLFOCUS(IDC_SETTINGS_PRINTPARAMS, OnKillfocusPrintParams)
 	ON_BN_CLICKED(IDC_SETTINGS_ADVSETTING, OnAdvSetting)
 	//}}AFX_MSG_MAP
 	ON_BN_CLICKED(IDC_SETTINGS_OK, OnOK)
@@ -105,10 +105,13 @@ SetDlgState()
 	_SetChkBttn( IDC_SETTINGS_ENABLEP,      (BOOL)m_nEnablePPatch );
 	_SetChkBttn( IDC_SETTINGS_ENABLER,      (BOOL)m_nEnableRPatch );
 	_SetChkBttn( IDC_SETTINGS_HARDREADONLY, (BOOL)m_nHardReadOnly );
-	_SetChkBttn( IDC_SETTINGS_PRINTCHECK,   _IsFlagSet( m_ulMiscState, MS_USE_PRINT_COMMAND ) );
 
-	/* An alternative print command */
-	SetDlgItemText( IDC_SETTINGS_PRINTCMD, m_szPrintCommand );
+	/* Alternative Print Methods */
+	_SetSelCbox( IDC_SETTINGS_PRINTMETHOD, m_nPrintMethod + 1 );
+    if (m_nPrintMethod >= 0 && m_nPrintMethod < PRINT_METHOD_COUNT)
+	    SetDlgItemText( IDC_SETTINGS_PRINTPARAMS, m_szPrintParams[m_nPrintMethod] );
+    else
+        SetDlgItemText( IDC_SETTINGS_PRINTPARAMS, "(default print action)" );
 
 #ifdef WIN_NETWORK_GAMES
 	if( ST_KAILLERA_ACTIVE )
@@ -119,16 +122,16 @@ SetDlgState()
 		_EnableCtrl( IDC_SETTINGS_ENABLEP,      FALSE );
 		_EnableCtrl( IDC_SETTINGS_ENABLER,      FALSE );
 		_EnableCtrl( IDC_SETTINGS_HARDREADONLY, FALSE );
-		_EnableCtrl( IDC_SETTINGS_PRINTCHECK,   FALSE );
-		_RdOnlyEdit( IDC_SETTINGS_PRINTCMD,     TRUE  );
+		_EnableCtrl( IDC_SETTINGS_PRINTMETHOD,  FALSE );
+		_RdOnlyEdit( IDC_SETTINGS_PRINTPARAMS,  TRUE  );
 	}
 	else
 #endif
 	{
 		_EnableCtrl( IDC_SETTINGS_ENABLER,      RDevice_IsCapable() != -1 );
 		_EnableCtrl( IDC_SETTINGS_HARDREADONLY, (BOOL)m_nEnableHPatch );
-		_EnableCtrl( IDC_SETTINGS_PRINTCHECK,   (BOOL)m_nEnablePPatch );
-		_EnableCtrl( IDC_SETTINGS_PRINTCMD,     m_nEnablePPatch && _IsFlagSet( m_ulMiscState, MS_USE_PRINT_COMMAND ) );
+		_EnableCtrl( IDC_SETTINGS_PRINTMETHOD,  (BOOL)m_nEnablePPatch );
+		_EnableCtrl( IDC_SETTINGS_PRINTPARAMS,  m_nEnablePPatch && (m_nPrintMethod >= 0) );
 	}
 } /* #OF# CSettingsDlg::SetDlgState */
 
@@ -158,7 +161,9 @@ OnInitDialog()
 	m_nHardReadOnly   = Devices_h_read_only;
 	m_nEnableRTime    = RTIME_enabled;
 
-	strcpy( m_szPrintCommand, Devices_print_command);
+    m_nPrintMethod = Devices_print_method;
+    for (int i = 0; i < PRINT_METHOD_COUNT; i++)
+	    strcpy( m_szPrintParams[i], Devices_print_params[i] );
 
 	SetDlgState();
 
@@ -259,23 +264,32 @@ OnHardReadOnly()
 } /* #OF# CSettingsDlg::OnHardReadOnly */
 
 /*========================================================
-Method   : CSettingsDlg::OnPrintCheck
+Method   : CSettingsDlg::OnSelchangePrintMethod
 =========================================================*/
 /* #FN#
-   Sets a state of the object regarding to an appropriate check box */
+   Sets a state of the object regarding to an appropriate combo box */
 void
 /* #AS#
    Nothing */
 CSettingsDlg::
-OnPrintCheck()
+OnSelchangePrintMethod()
 {
-	_ClickButton( IDC_SETTINGS_PRINTCHECK, m_ulMiscState, MS_USE_PRINT_COMMAND );
+    int itemindex;
+	if( CB_ERR == (itemindex = _GetSelCbox( IDC_SETTINGS_PRINTMETHOD )) )
+	{
+		_SetSelCbox( IDC_SETTINGS_PRINTMETHOD, 0 ),
+		m_nPrintMethod = PRINT_METHOD_DEFAULT;
+	}
+    else
+    {
+        m_nPrintMethod = itemindex - 1;
+    }
 	SetDlgState();
 
-} /* #OF# CSettingsDlg::OnPrintCheck */
+} /* #OF# CSettingsDlg::OnSelchangePrintMethod */
 
 /*========================================================
-Method   : CSettingsDlg::OnKillfocusPrintCmd
+Method   : CSettingsDlg::OnKillfocusPrintParams
 =========================================================*/
 /* #FN#
    The framework calls this function before an edit losing input focus */
@@ -283,11 +297,12 @@ void
 /* #AS#
    Nothing */
 CSettingsDlg::
-OnKillfocusPrintCmd()
+OnKillfocusPrintParams()
 {
-	GetDlgItemText( IDC_SETTINGS_PRINTCMD, m_szPrintCommand, PRINT_CMD_LENGTH );
+    if (m_nPrintMethod >= 0 && m_nPrintMethod < PRINT_METHOD_COUNT)
+	GetDlgItemText( IDC_SETTINGS_PRINTPARAMS, m_szPrintParams[m_nPrintMethod], PRINT_PARAMS_LENGTH );
 
-} /* #OF# CSettingsDlg::OnKillfocusPrintCmd */
+} /* #OF# CSettingsDlg::OnKillfocusPrintParams */
 
 /*========================================================
 Method   : CSettingsDlg::OnAdvSetting
@@ -323,9 +338,9 @@ ReceiveFocused()
 	CWnd *pWnd    = GetFocus();
 	UINT  nCtrlID = pWnd ? pWnd->GetDlgCtrlID() : 0;
 
-	if( IDC_SETTINGS_PRINTCMD == nCtrlID )
+	if( IDC_SETTINGS_PRINTPARAMS == nCtrlID )
 	{
-		OnKillfocusPrintCmd();
+		OnKillfocusPrintParams();
 	}
 } /* #OF# CSettingsDlg::ReceiveFocused */
 
@@ -412,13 +427,24 @@ OnOK()
 			WriteRegDWORD( NULL, REG_MISC_STATE, g_Misc.ulState );
 		}
 
-		if( *m_szPrintCommand == '\0' )
-			strcpy( m_szPrintCommand, DEF_PRINT_COMMAND );
-		if( _stricmp( m_szPrintCommand, Devices_print_command ) != 0 )
+		if( m_nPrintMethod != Devices_print_method )
 		{
-			strcpy( Devices_print_command, m_szPrintCommand);
-			WriteRegString( NULL, REG_PRINT_COMMAND, Devices_print_command );
+			Devices_print_method = m_nPrintMethod;
+			WriteRegDWORD( NULL, REG_PRINT_METHOD, Devices_print_method );
 		}
+
+        for (int i = 0; i < PRINT_METHOD_COUNT; i++)
+        {
+ 		    if( *m_szPrintParams[i] == '\0' )
+			    strcpy( m_szPrintParams[i], DEF_PRINT_COMMAND );
+		    if( _stricmp( m_szPrintParams[i], Devices_print_params[i] ) != 0 )
+		    {
+			    strcpy( Devices_print_params[i], m_szPrintParams[i]);
+                char key[32];
+                sprintf (key, REG_PRINT_PARAMS_FMT, i);
+			    WriteRegString (NULL, key, Devices_print_params[i]);
+		    }
+        }
 		CCommonDlg::OnOK();
 	}
 } /* #OF# CSettingsDlg::OnOK */

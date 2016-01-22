@@ -36,15 +36,23 @@ extern "C" {
 #define DEF_RAMSIZE_OSB			48
 #define DEF_RAMSIZE_XLXE		64
 
-#define DEF_PRINT_COMMAND		"Notepad %s"
-#define PRINT_CMD_LENGTH		255
-
 #define CX_BORDER				2		/* Note: afxData.cxBorder and afxData.cyBorder aren't used anymore */
 #define CY_BORDER				2
 
 #define LOADSTRING_SIZE_S		128
 #define LOADSTRING_SIZE_M		512
 #define LOADSTRING_SIZE_L		1536
+
+#define DEF_PRINT_COMMAND		"Notepad %s"
+#define DEF_PRINT_ADDRESS		"localhost:12001"
+
+#define PRINT_PARAMS_LENGTH     255
+
+#define PRINT_METHOD_DEFAULT    -1 
+#define PRINT_METHOD_CMD_TEXT   0
+#define PRINT_METHOD_CMD_RAW    1
+#define PRINT_METHOD_EMU_TCPIP  2
+#define PRINT_METHOD_COUNT      3
 
 #define ID_INDICATOR_MSG		0
 #define ID_INDICATOR_RUN		1

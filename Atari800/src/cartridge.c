@@ -582,7 +582,7 @@ int CARTRIDGE_Insert(const char *filename)
 	if ((len & 0x3ff) == 0) {
 		/* alloc memory and read data */
 		cart_image = (UBYTE *) Util_malloc(len);
-		if (fread(cart_image, 1, len, fp) < len) {
+		if ((int) fread(cart_image, 1, len, fp) < len) {
 			Log_print("Error reading cartridge.\n");
 		}
 		fclose(fp);
@@ -621,7 +621,7 @@ int CARTRIDGE_Insert(const char *filename)
 			len = CARTRIDGE_kb[type] << 10;
 			/* alloc memory and read data */
 			cart_image = (UBYTE *) Util_malloc(len);
-			if (fread(cart_image, 1, len, fp) < len) {
+			if ((int) fread(cart_image, 1, len, fp) < len) {
 				Log_print("Error reading cartridge.\n");
 			}
 			fclose(fp);
@@ -663,7 +663,7 @@ int CARTRIDGE_Insert_Second(const char *filename)
 	if ((len & 0x3ff) == 0) {
 		/* alloc memory and read data */
 		second_cart_image = (UBYTE *) Util_malloc(len);
-		if (fread(second_cart_image, 1, len, fp) < len) {
+		if ((int) fread(second_cart_image, 1, len, fp) < len) {
 			Log_print("Error reading cartridge.\n");
 		}
 		fclose(fp);
@@ -701,7 +701,7 @@ int CARTRIDGE_Insert_Second(const char *filename)
 			len = CARTRIDGE_kb[type] << 10;
 			/* alloc memory and read data */
 			second_cart_image = (UBYTE *) Util_malloc(len);
-			if (fread(second_cart_image, 1, len, fp) < len) {
+			if ((int) fread(second_cart_image, 1, len, fp) < len) {
 				Log_print("Error reading cartridge.\n");
 			}
 			fclose(fp);

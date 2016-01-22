@@ -2469,7 +2469,7 @@ static void render_to_tick(int last_tick)
         /* advance to the next sample position */
         new_samp_pos = samp_pos + ticks_per_sample;
         /* the next tick position is the integer part */
-        new_tick_pos = floor(new_samp_pos);
+        new_tick_pos = (int) floor(new_samp_pos);
         /* leave the loop if we went past the desired position */
         if (new_tick_pos > last_tick) {
                 break;

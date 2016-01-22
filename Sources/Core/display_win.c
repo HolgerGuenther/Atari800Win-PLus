@@ -3265,7 +3265,7 @@ Screen_DDraw_Double_HiEnd( void )
 		c+=ATARI_FULL_HORZ_CLIP;
 	}
 
-	hq2x_32(hqSource, hqTarget, ATARI_VIS_WIDTH, Screen_HEIGHT);
+	hq2x_32 ((uint32_t *) hqSource, (uint32_t *) hqTarget, ATARI_VIS_WIDTH, Screen_HEIGHT);
 
 	if( SUCCEEDED(hResult = DD_SurfaceGetDC( &hdc )) )
 	{
@@ -4198,7 +4198,7 @@ Screen_GDI_Double_HiEnd( void )
 		c+=ATARI_FULL_HORZ_CLIP;
 	}
 
-	hq2x_32(hqSource, hqTarget, ATARI_VIS_WIDTH, Screen_HEIGHT);
+	hq2x_32 ((uint32_t *) hqSource, (uint32_t *) hqTarget, ATARI_VIS_WIDTH, Screen_HEIGHT);
 
 	StretchDIBits( g_Screen.hDC,
 				   0, 0, ATARI_DOUBLE_VIS_WIDTH, ATARI_DOUBLE_HEIGHT,

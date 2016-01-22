@@ -115,7 +115,7 @@ Timer_WaitForVBI( void )
 	ULONG ulTimerLastVal = s_ulAtariHWNextTime;
 	LARGE_INTEGER lnTicks;
 	int nDelay = 50;
-	ULONG deltaTime = s_ulDeltaT * PLATFORM_AdjustSpeed();
+	ULONG deltaTime = (ULONG) (s_ulDeltaT * PLATFORM_AdjustSpeed());
 
 	QueryPerformanceCounter( &lnTicks );
 	if( s_bTimerRollover )

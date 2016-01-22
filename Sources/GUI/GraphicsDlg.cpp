@@ -261,7 +261,7 @@ SetDlgState(
 		}
 	}
 	/* Set the stretching mode combo */
-	_SetSelCbox( IDC_GRAPHICS_STRETCHMODE,   (BOOL)m_nStretchMode );
+	_SetSelCbox( IDC_GRAPHICS_STRETCHMODE,   m_nStretchMode );
 	_SetChkBttn( IDC_GRAPHICS_USEGDI,        _IsFlagSet( m_ulScreenState, SM_OPTN_USE_GDI     ) );
 	_SetChkBttn( IDC_GRAPHICS_HIDECURSOR,    _IsFlagSet( m_ulScreenState, SM_OPTN_HIDE_CURSOR ) );
 	_SetChkBttn( IDC_GRAPHICS_USESYSPALETTE, _IsFlagSet( m_ulScreenState, SM_OPTN_USE_SYSPAL  ) );

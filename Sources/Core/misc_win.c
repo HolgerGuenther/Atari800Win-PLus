@@ -1296,49 +1296,56 @@ BOOL
 /* #AS#
    TRUE if succeeded, otherwise FALSE */
 Misc_ExecutePrintCmd(
-	LPSTR pszPrintFile /* #IN# Print command to execute */
+    LPSTR pszPrintCmd, /* #IN# Print command to execute */
+	LPSTR pszPrintFile /* #IN# Name of spool file to print */
 )
 {
 	BOOL bResult = TRUE;
 
-	/* Unfortunately, there are some problems with automatically return to
-	   flipped full-screen mode, go to windowed instead */
-	if( _IsFlagSet( g_Screen.ulState, SM_MODE_FULL ) /*&& _IsFlagSet( g_Screen.ulState, SM_OPTN_FLIP_BUFFERS )*/ )
-	{
-		/* The only safe method to doing it here */
-		PostMessage( g_hMainWnd, WM_COMMAND, ID_VIEW_TOGGLEMODES, 0L );
-	}
+    /* Unfortunately, there are some problems with automatically return to
+       flipped full-screen mode, go to windowed instead */
+    if( _IsFlagSet( g_Screen.ulState, SM_MODE_FULL ) /*&& _IsFlagSet( g_Screen.ulState, SM_OPTN_FLIP_BUFFERS )*/ )
+    {
+	    /* The only safe method to doing it here */
+	    PostMessage( g_hMainWnd, WM_COMMAND, ID_VIEW_TOGGLEMODES, 0L );
+    }
 
-	if( !_IsFlagSet( g_Misc.ulState, MS_USE_PRINT_COMMAND ) )
-	{
-		char szPath[ MAX_PATH + 1 ];
-		char szFile[ MAX_PATH + 1 ];
-		int  nResult;
+    if (pszPrintFile != NULL) if (strlen (pszPrintFile) > 0)
+    {
+        if (Devices_IsValidPrintCommand (pszPrintCmd))
+	    {
+            /* Execute user-defined print command */
+		    char szPrintCmd[ PRINT_PARAMS_LENGTH + 1 ];
 
-		strcpy( szPath, pszPrintFile);
-		GetFolderPath( szPath, szFile );
+		    sprintf( szPrintCmd, pszPrintCmd, pszPrintFile );
+		    if( !ExecuteCmd( szPrintCmd, FALSE ) )
+			    bResult = FALSE;
+	    }
+        else
+	    {
+            /* Execute default print command */
+		    char szPath[ MAX_PATH + 1 ];
+		    char szFile[ MAX_PATH + 1 ];
+		    int  nResult;
 
-		if( (nResult =
-			(int)ShellExecute( g_hMainWnd,
-							   "print",
-							   szFile,
-							   NULL,
-							   szPath,
-							   SW_HIDE )) < 32 )
-		{
-			Log_print( "Printing error (shell execution code: %d)", nResult );
-			bResult = FALSE;
-		}
-	}
-	else
-	{
-		char szPrintCmd[ PRINT_CMD_LENGTH + 1 ];
+		    strcpy( szPath, pszPrintFile);
+		    GetFolderPath( szPath, szFile );
 
-		sprintf( szPrintCmd, Devices_print_command, pszPrintFile );
-		if( !ExecuteCmd( szPrintCmd, FALSE ) )
-			bResult = FALSE;
-	}
-	_ClrFlag( g_ulAtariState, ATARI_PAUSED );
+		    if( (nResult =
+			    (int) ShellExecute( g_hMainWnd,
+				      			    "print",
+					    		    szFile,
+						    	    NULL,
+							        szPath,
+							        SW_HIDE )) < 32 )
+		    {
+			    Log_print( "Printing error (shell execution code: %d)", nResult );
+			    bResult = FALSE;
+		    }
+	    }
+    }
+
+    _ClrFlag( g_ulAtariState, ATARI_PAUSED );
 
 	return bResult;
 

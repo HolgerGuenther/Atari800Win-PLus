@@ -1228,6 +1228,10 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath="..\..\Sources\Core\printstreams.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\Sources\Core\rdevice.c"
 					>
 					<FileConfiguration
@@ -1719,6 +1723,10 @@
 				</File>
 				<File
 					RelativePath="..\..\Include\misc_win.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Include\printstreams.h"
 					>
 				</File>
 				<File

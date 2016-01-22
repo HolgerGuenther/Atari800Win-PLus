@@ -694,7 +694,7 @@ int SIO_ReadSector(int unit, int sector, UBYTE *buffer)
 		}
 		/* bad sector */
 		if (buffer[1] != 0xff) {
-			if (fread(buffer, 1, size, disk[unit]) < size) {
+			if ((int) fread(buffer, 1, size, disk[unit]) < size) {
 				Log_print("Error in bad sector of .pro image: sector:%d", sector);
 			}
 			io_success[unit] = sector;
@@ -792,7 +792,7 @@ int SIO_ReadSector(int unit, int sector, UBYTE *buffer)
 		info->sec_stat_buff[2] = 0xe0;
 		info->sec_stat_buff[3] = 0;
 		if (secinfo->sec_status[secindex] != 0xFF) {
-			if (fread(buffer, 1, size, disk[unit]) < size) {
+			if ((int) fread(buffer, 1, size, disk[unit]) < size) {
 				Log_print("error reading sector:%d", sector);
 			}
 			io_success[unit] = sector;
@@ -816,7 +816,7 @@ int SIO_ReadSector(int unit, int sector, UBYTE *buffer)
 		Log_flushlog();
 #endif		
 	}
-	if (fread(buffer, 1, size, disk[unit]) < size) {
+	if ((int) fread(buffer, 1, size, disk[unit]) < size) {
 		Log_print("incomplete sector num:%d", sector);
 	}
 	io_success[unit] = 0;

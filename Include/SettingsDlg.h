@@ -62,7 +62,8 @@ private:
 	int   m_nEnableRPatch;
 	int   m_nEnableRTime;
 	int   m_nHardReadOnly;
-	char  m_szPrintCommand[ PRINT_CMD_LENGTH + 1 ];
+    int   m_nPrintMethod;
+	char  m_szPrintParams[PRINT_METHOD_COUNT][PRINT_PARAMS_LENGTH + 1];
 
 // Generated message map functions
 protected:
@@ -73,8 +74,8 @@ protected:
 	afx_msg void OnEnableP();
 	afx_msg void OnEnableR();
 	afx_msg void OnHardReadOnly();
-	afx_msg void OnPrintCheck();
-	afx_msg void OnKillfocusPrintCmd();
+    afx_msg void OnSelchangePrintMethod();
+	afx_msg void OnKillfocusPrintParams();
 	afx_msg void OnAdvSetting();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()

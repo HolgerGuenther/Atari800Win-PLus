@@ -495,6 +495,7 @@ WriteAtari800Registry(
 )
 {
 	HKEY hkKey = NULL;
+    int i;
 
 	if( RegOpenKeyEx( HKEY_CURRENT_USER, REGNAME, 0, KEY_ALL_ACCESS, &hkKey ) != ERROR_SUCCESS )
 	{
@@ -520,7 +521,13 @@ WriteAtari800Registry(
 	_RegWriteString( hkKey, REG_ROM_5200,            CFG_5200_filename             );
 	_RegWriteString( hkKey, REG_ROM_BASIC,           CFG_basic_filename            );
 	_RegWriteString( hkKey, REG_FILE_TAPE,           cassette_filename             );
-	_RegWriteString( hkKey, REG_PRINT_COMMAND,       Devices_print_command         );
+	_RegWriteNumber( hkKey, REG_PRINT_METHOD,        Devices_print_method          );
+    for (i = 0; i < PRINT_METHOD_COUNT; i++)
+    {
+        char key[32];
+        sprintf (key, REG_PRINT_PARAMS_FMT, i);
+	    _RegWriteString ( hkKey, key, Devices_print_params[i]);
+    }
 	_RegWriteNumber( hkKey, REG_MOUSE_MODE,          INPUT_mouse_mode              );
 	_RegWriteNumber( hkKey, REG_MOUSE_PORT,          INPUT_mouse_port              );
 	_RegWriteNumber( hkKey, REG_MOUSE_SPEED,         INPUT_mouse_speed             );
@@ -628,6 +635,7 @@ InitialiseRegistry(
 	Devices_enable_h_patch        = 0;
 	Devices_enable_p_patch        = 0;
 	Devices_enable_r_patch        = 0;
+    Devices_print_method          = PRINT_METHOD_DEFAULT;
 	POKEYSND_stereo_enabled       = 0;
 	CARTRIDGE_type                = CARTRIDGE_NONE;
 	INPUT_joy_block_opposite_directions = 1;
@@ -724,7 +732,15 @@ InitialiseRegistry(
 	strcpy( g_szCurrentRom, FILE_NONE );
 	strcpy( g_szOtherRom,   FILE_NONE );
 
-	strcpy( Devices_print_command, DEF_PRINT_COMMAND );
+    for (i = 0; i < PRINT_METHOD_COUNT; i++)
+    {
+        if (Devices_PrintParamIsCommand (i))
+	        strcpy( Devices_print_params[i], DEF_PRINT_COMMAND );
+        else if (Devices_PrintParamIsAddress (i))
+	        strcpy( Devices_print_params[i], DEF_PRINT_ADDRESS );
+        else
+            Devices_print_params[i][0] = '\0';
+    }
 
 	for( i = 0; i < SIO_MAX_DRIVES; i++ )
 	{
@@ -852,6 +868,7 @@ HandleRegistry( void )
 	BOOL  bFail         = FALSE;
 	DWORD dwDisposition = REG_OPENED_EXISTING_KEY;
 	BOOL  bInitialReg   = FALSE;
+    int   i             = 0;
 
 	if( RegOpenKeyEx( HKEY_CURRENT_USER, REGNAME, 0, KEY_ALL_ACCESS, &hkKey ) != ERROR_SUCCESS )
 	{
@@ -899,7 +916,20 @@ HandleRegistry( void )
 		}
 		else
 		{
-			bFail |= _RegReadString( hkKey, REG_PRINT_COMMAND,       Devices_print_command,         DEF_PRINT_COMMAND, PRINT_CMD_LENGTH );
+			bFail |= _RegReadNumber( hkKey, REG_PRINT_METHOD,        Devices_print_method,          PRINT_METHOD_DEFAULT     );
+            for (i = 0; i < PRINT_METHOD_COUNT; i++)
+            {
+                char key[32];
+                char def[PRINT_PARAMS_LENGTH + 1];
+                sprintf (key, REG_PRINT_PARAMS_FMT, i);
+                if (Devices_PrintParamIsCommand (i))
+                    strcpy (def, DEF_PRINT_COMMAND);
+                else if (Devices_PrintParamIsAddress (i))
+                    strcpy (def, DEF_PRINT_ADDRESS);
+                else
+                    def[0] = '\0';
+                bFail |= _RegReadString( hkKey, key, Devices_print_params[i], def, PRINT_PARAMS_LENGTH );
+            }
 			bFail |= _RegReadNumber( hkKey, REG_MACHINE_TYPE,        Atari800_machine_type,         Atari800_MACHINE_XLXE            );
 			bFail |= _RegReadNumber( hkKey, REG_TV_MODE,             Atari800_tv_mode,              Atari800_TV_PAL         );
 			bFail |= _RegReadNumber( hkKey, REG_CART_TYPE,           CARTRIDGE_type,                CARTRIDGE_NONE          );

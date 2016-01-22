@@ -19,6 +19,7 @@ File    : core.h
 #include "input_win.h"
 #include "kaillera.h"
 #include "misc_win.h"
+#include "printstreams.h"
 #include "rdevice.h"
 #include "registry.h"
 #include "sound_win.h"

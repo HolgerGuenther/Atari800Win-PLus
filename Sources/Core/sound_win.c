@@ -78,8 +78,8 @@ static void SndPlay_SDLSound( void ) {
 	int gap;
 	int newpos;
 	int bytes_per_sample;
-	int i;
 	double bytes_per_ms;
+	/* int i; */
 
 	/* produce samples from the sound emulation */
 	samples_written = MZPOKEYSND_UpdateProcessBuffer();
@@ -113,7 +113,7 @@ static void SndPlay_SDLSound( void ) {
 	gap = dsp_write_pos - dsp_read_pos;
 	/* an estimation of the current gap, adding time since then */
 	if (callbacktick != 0) {
-		gap_est = gap - (bytes_per_ms)*(SDL_GetTicks() - callbacktick);
+		gap_est = gap - (int) ((bytes_per_ms)*(SDL_GetTicks() - callbacktick));
 	}
 	/* if there isn't enough room... */
 	while (gap + bytes_written > dsp_buffer_bytes) {

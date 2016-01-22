@@ -21,7 +21,7 @@ extern "C" {
 
 /* Whenever any value is changed/deleted/added in this file,
    change CURRENT_REV */
-#define CURRENT_REV				21
+#define CURRENT_REV				22
 
 #define REG_MACHINE_TYPE		"sysMachineType"
 #define REG_RAMSIZE_OSA			"sysRamSizeOSA"
@@ -35,7 +35,8 @@ extern "C" {
 #define REG_ENABLE_P_PATCH		"sysEnablePPatch"
 #define REG_ENABLE_R_PATCH		"sysEnableRPatch"
 #define REG_HD_READ_ONLY		"sysHDReadOnly"
-#define REG_PRINT_COMMAND		"sysPrintCommand"
+#define REG_PRINT_METHOD		"sysPrintMethod"
+#define REG_PRINT_PARAMS_FMT	"sysPrintParam%d"
 #define REG_CART_TYPE			"sysCartType"
 
 #define REG_SCREEN_STATE		"screenState"

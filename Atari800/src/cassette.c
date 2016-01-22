@@ -173,7 +173,7 @@ int CASSETTE_CheckFile(const char *filename, FILE **fp, char *description, int *
 				skip = 0;
 			else
 				skip -= CASSETTE_DESCRIPTION_MAX - 1;
-			if (fread(description, 1, length - skip, f) < (length - skip)) {
+			if ((int) fread(description, 1, length - skip, f) < (int) (length - skip)) {
 				Log_print("Error reading cassette file.\n");
 			}
 		}
@@ -339,7 +339,7 @@ static int ReadRecord_SIO(void)
 			   a byte is encoded into 10 bits */
 			filegaptimes += length * 10 * 1000 / cassette_baudblock[cassette_current_block];
 
-			if (fread(&CASSETTE_buffer[0], 1, length, cassette_file) < length) {
+			if ((int) fread(&CASSETTE_buffer[0], 1, length, cassette_file) < length) {
 				Log_print("Error reading cassette file.\n");
 			}
 			cassette_current_block++;
@@ -500,7 +500,7 @@ static int ReadRecord_POKEY(void)
 				+ 10 * 1000 / cassette_baudblock[
 				cassette_current_block]);
 			/* read block into buffer */
-			if (fread(&CASSETTE_buffer[0], 1, length, cassette_file) < length) {
+			if ((int) fread(&CASSETTE_buffer[0], 1, length, cassette_file) < length) {
 				Log_print("Error reading cassette file.\n");
 			}
 			cassette_max_blockbytes = length;

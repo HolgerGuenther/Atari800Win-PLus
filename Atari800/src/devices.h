@@ -1,8 +1,9 @@
 #ifndef DEVICES_H_
 #define DEVICES_H_
 
-#include <stdio.h> /* FILENAME_MAX */
-#include "atari.h" /* UWORD */
+#include <stdio.h>      /* FILENAME_MAX */
+#include "atari.h"      /* UWORD */
+#include "globals.h"    /* PRINT_METHOD_xxx, PRINT_PARAMS_LENGTH */
 
 #define DEFAULT_H_PATH  "H1:>DOS;>DOS"
 
@@ -27,9 +28,14 @@ extern char Devices_h_current_dir[4][FILENAME_MAX];
 int Devices_H_CountOpen(void);
 void Devices_H_CloseAll(void);
 
-extern char Devices_print_command[256];
+extern int Devices_print_method;
+extern char Devices_print_params[PRINT_METHOD_COUNT][PRINT_PARAMS_LENGTH + 1];
 
-int Devices_SetPrintCommand(const char *command);
+int Devices_IsValidPrintCommand (const char *command);
+
+int Devices_PrintMethodConvertsText (int APrintMethod);
+int Devices_PrintParamIsCommand (int APrintMethod);
+int Devices_PrintParamIsAddress (int APrintMethod);
 
 #define	Devices_ICHIDZ	0x0020
 #define	Devices_ICDNOZ	0x0021

@@ -24,7 +24,6 @@ extern "C" {
 #define MS_REUSE_WINDOW				0x00000020
 #define MS_USE_DOUBLEWND_REFRESH	0x00000040
 #define MS_TRANS_LOADED_PAL			0x00000080
-#define MS_USE_PRINT_COMMAND		0x00000100
 #define MS_SHOW_DRIVE_LED			0x00000200
 #define MS_STOP_WHEN_NO_FOCUS		0x00000400
 #define MS_SHOW_INDICATORS			0x00000800
@@ -127,7 +126,7 @@ HWND  Misc_FindChildWindow    ( HWND hParent, LPCSTR pszTitle );
 void  Misc_EnableCloseItem    ( HWND hWnd, BOOL bEnable );
 void  Misc_UpdateCollisions   ();
 BOOL  Misc_GetSystemInfo      ( UINT *pSystemInfo );
-BOOL  Misc_ExecutePrintCmd    ( LPSTR pszPrintFile );
+BOOL  Misc_ExecutePrintCmd    ( LPSTR pszPrintCmd, LPSTR pszPrintFile );
 void  Misc_SetProcessPriority ( void );
 void  Misc_PrintTime          ( void );
 /* This one is invoked directly by kernel */

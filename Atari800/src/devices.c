@@ -74,6 +74,8 @@
 #include "misc_win.h"
 #endif
 
+#include "printstreams.h"
+
 #ifndef S_IREAD
 #define S_IREAD S_IRUSR
 #endif
@@ -1800,9 +1802,10 @@ static void Devices_H_Special(void)
 
 /* P: device emulation --------------------------------------------------- */
 
-char Devices_print_command[256] = "lpr %s";
+int Devices_print_method = PRINT_METHOD_DEFAULT;
+char Devices_print_params[PRINT_METHOD_COUNT][PRINT_PARAMS_LENGTH + 1] = { "lpr %s", "lpr %s" };
 
-int Devices_SetPrintCommand(const char *command)
+int Devices_IsValidPrintCommand (const char *command)
 {
 	const char *p = command;
 	int was_percent_s = FALSE;
@@ -1818,38 +1821,45 @@ int Devices_SetPrintCommand(const char *command)
 			return FALSE;
 		}
 	}
-	strcpy(Devices_print_command, command);
-	return TRUE;
+	return was_percent_s;
+}
+
+int Devices_PrintParamIsCommand (int APrintMethod)
+{
+    if (APrintMethod == PRINT_METHOD_CMD_TEXT || APrintMethod == PRINT_METHOD_CMD_RAW)
+        return TRUE;
+    return FALSE;
+}
+
+int Devices_PrintParamIsAddress (int APrintMethod)
+{
+    if (APrintMethod == PRINT_METHOD_EMU_TCPIP)
+        return TRUE;
+    return FALSE;
+}
+
+int Devices_PrintMethodConvertsText (int APrintMethod)
+{
+    if (APrintMethod == PRINT_METHOD_DEFAULT ||
+        APrintMethod == PRINT_METHOD_CMD_TEXT)
+        return TRUE;
+    return FALSE;
 }
 
 #ifdef HAVE_SYSTEM
 
-static FILE *phf = NULL;
-static char spool_file[FILENAME_MAX];
+static PrintStream ps = NULL;
 
 static void Devices_P_Close(void)
 {
 	if (devbug)
 		Log_print("PHCLOS");
 
-	if (phf != NULL) {
-		fclose(phf);
-		phf = NULL;
-
-#ifdef __PLUS
-		if (!Misc_ExecutePrintCmd(spool_file))
-#endif
-		{
-			char command[256 + FILENAME_MAX]; /* 256 for Devices_print_command + FILENAME_MAX for spool_file */
-			int retval;
-			sprintf(command, Devices_print_command, spool_file);
-			retval = system(command);
-#if defined(HAVE_UTIL_UNLINK) && !defined(VMS) && !defined(MACOSX)
-			if (Util_unlink(spool_file) != 0) {
-				perror(spool_file);
-			}
-#endif
-		}
+    if (ps)
+    {
+        PrintStreamClose (ps);
+        PrintStreamProcessSpoolFile (ps);
+        PrintStreamRelease (&ps);
 	}
 	CPU_regY = 1;
 	CPU_ClrN;
@@ -1860,15 +1870,41 @@ static void Devices_P_Open(void)
 	if (devbug)
 		Log_print("PHOPEN");
 
-	if (phf != NULL)
+	if (ps != NULL)
 		Devices_P_Close();
 
-	phf = Util_uniqopen(spool_file, "w");
-	if (phf != NULL) {
+    if (Devices_print_method >= 0 && Devices_print_method < PRINT_METHOD_COUNT)
+    {
+        /* This is a user-defined print method */
+        if (Devices_PrintParamIsCommand (Devices_print_method))
+        {
+            /* This is a print method based on a spool file */
+            ps = CreateFilePrintStream (
+                Devices_print_params[Devices_print_method], 
+                Devices_PrintMethodConvertsText (Devices_print_method));
+        }
+        else if (Devices_PrintParamIsAddress (Devices_print_method))
+        {
+            /* This is a network-based print method */
+            ps = CreateTCPPrintStream (
+                Devices_print_params[Devices_print_method], 
+                Devices_PrintMethodConvertsText (Devices_print_method));
+        }
+    }
+    else
+    {
+        /* This is the default print method, which is also based on a spool file */
+        ps = CreateFilePrintStream (NULL, TRUE);
+    }
+
+    if (PrintStreamOpen (ps))
+    {
 		CPU_regY = 1;
 		CPU_ClrN;
 	}
-	else {
+	else 
+    {
+        PrintStreamRelease (&ps);
 		CPU_regY = 144; /* device done error */
 		CPU_SetN;
 	}
@@ -1876,16 +1912,11 @@ static void Devices_P_Open(void)
 
 static void Devices_P_Write(void)
 {
-	UBYTE byte;
-
 	if (devbug)
 		Log_print("PHWRIT");
 
-	byte = CPU_regA;
-	if (byte == 0x9b)
-		byte = '\n';
+    PrintStreamWriteByte (ps, CPU_regA);
 
-	fputc(byte, phf);
 	CPU_regY = 1;
 	CPU_ClrN;
 }
@@ -1901,14 +1932,10 @@ static void Devices_P_Init(void)
 	if (devbug)
 		Log_print("PHINIT");
 
-	if (phf != NULL) {
-		fclose(phf);
-		phf = NULL;
-#ifdef HAVE_UTIL_UNLINK
-		Util_unlink(spool_file);
-#endif
-	}
-	CPU_regY = 1;
+    PrintStreamDeleteSpoolFile (ps);
+    PrintStreamRelease (&ps);
+
+    CPU_regY = 1;
 	CPU_ClrN;
 }
 
