@@ -36,7 +36,10 @@ public:
 
     CCommonPrintStream (char * AParam, BOOL AConvertToText)
     {
-        strncpy (FParam, AParam, PRINT_PARAMS_LENGTH);
+        if (AParam)
+            strncpy (FParam, AParam, PRINT_PARAMS_LENGTH);
+        else
+            FParam[0] = '\0';
         FConvertToText = AConvertToText;
     }
 
